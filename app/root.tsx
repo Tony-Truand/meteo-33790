@@ -2,6 +2,7 @@ import {
   isRouteErrorResponse,
   Links,
   Meta,
+  NavLink,
   Outlet,
   Scripts,
   ScrollRestoration,
@@ -9,17 +10,17 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { cn } from "./utils/tailwind";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Rubik&display=swap",
   },
 ];
 
@@ -42,7 +43,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return <main className="flex items-center justify-center pt-16 pb-4">
+    <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
+      <header className="flex flex-col items-center gap-9">
+        <div className="w-[500px] max-w-[100vw] p-4">
+          <h1 className="text-7xl font-mono font-bold">Météo 33790</h1>
+          <h6>La météo de <strong>vos</strong> endroits préférés</h6>
+        </div>
+      </header>
+      <div className="max-w-[300px] w-full space-y-6 px-4">
+        <nav className={`
+          rounded-3xl border border-gray-200 p-6 dark:border-gray-700
+          flex flex-row gap-x-8 justify-center
+          `}>
+          {[
+            { to: '/', text: 'Home' },
+            { to: '/about', text: 'Misson' },
+
+          ].map(({ to, text }, i) =>
+            <>
+              <NavLink key={i} to={to}
+                className="text-blue-500 [&.active]:text-red-400 [&.active]:underline"
+                end>{text}</NavLink>
+              <span className="last:hidden">&bull;</span>
+            </>
+          )
+          }
+        </nav>
+      </div>
+      <div className="bg-lime-400">
+        <Outlet />
+      </div>
+    </div>
+  </main>;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
