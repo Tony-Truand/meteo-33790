@@ -1,4 +1,5 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
@@ -6,11 +7,44 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
+  type LoaderFunctionArgs,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { cn } from "./utils/tailwind";
+import prisma from "./models/db.server";
+import { commitSession, getSession } from "./sessions.server";
+import { randomUUID } from "node:crypto";
+import React from "react";
+export async function loader({ request }: LoaderFunctionArgs) {
+
+  const session = await getSession(
+    request.headers.get("Cookie")
+  );
+
+  if (session.data.userId === undefined) {
+    session.set("userId", randomUUID())
+  }
+
+  const user = await prisma.user.findFirst({
+    where: {
+      id: session.data.userId
+    },
+    select: {
+      lastActionAt: true,
+    }
+  })
+
+  return data({
+    uuid: session.data.userId,
+    lastActionAt: user?.lastActionAt,
+  }, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    }
+  })
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -43,7 +77,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <main className="flex items-center justify-center pt-16 pb-4">
+
+  const { uuid, lastActionAt } = useLoaderData<typeof loader>()
+
+  return <main className="flex flex-col items-center justify-start pt-16 pb-4 bg-slate-400 min-h-[100vh]">
     <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
       <header className="flex flex-col items-center gap-9">
         <div className="w-[500px] max-w-[100vw] p-4">
@@ -57,24 +94,28 @@ export default function App() {
           flex flex-row gap-x-8 justify-center
           `}>
           {[
-            { to: '/', text: 'Home' },
+            { to: '/home', text: 'Home' },
             { to: '/about', text: 'Misson' },
 
           ].map(({ to, text }, i) =>
-            <>
-              <NavLink key={i} to={to}
+            <React.Fragment key={`${i}${text}`} >
+              <NavLink to={to}
                 className="text-blue-500 [&.active]:text-red-400 [&.active]:underline"
                 end>{text}</NavLink>
               <span className="last:hidden">&bull;</span>
-            </>
+            </React.Fragment>
           )
           }
         </nav>
       </div>
-      <div className="bg-lime-400">
+      <div>
         <Outlet />
       </div>
     </div>
+    <footer className="flex flex-col bg-slate-600 rounded-t-md p-2">
+      <span>{uuid}</span>
+      <span>Dernière action: {lastActionAt ? lastActionAt.toLocaleString() : 'Jamais'}</span>
+    </footer>
   </main>;
 }
 

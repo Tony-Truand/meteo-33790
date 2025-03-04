@@ -5,3 +5,5 @@
 /.react-router/
 /build/
 .env
+prisma/meteo.db
+prisma/meteo.db-journal
