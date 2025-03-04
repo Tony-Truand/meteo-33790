@@ -6,7 +6,6 @@ import { commitSession, getSession } from "~/sessions.server";
 export function meta({ }: Route.MetaArgs) {
   return [
     { title: "Votre météo - chaque heure" },
-    // { name: "description", content: "Welcome to React Router!" },
   ];
 }
 
