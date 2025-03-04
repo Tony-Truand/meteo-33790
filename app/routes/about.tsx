@@ -1,7 +1,7 @@
 export default function About() {
   return (
     <div>
-      <h1>Mission</h1>
+      <h1>Missions</h1>
 
       <ol>
         {[
