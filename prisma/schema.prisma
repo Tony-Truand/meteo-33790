@@ -14,8 +14,9 @@ datasource db {
 }
 
 model User {
-  id     String  @id
-  Places Place[]
+  id           String   @id
+  Places       Place[]
+  lastActionAt DateTime
 
   @@unique([id])
 }
